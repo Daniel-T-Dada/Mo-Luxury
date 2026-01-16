@@ -1,0 +1,28 @@
+/src
+ ├── /app
+ │    ├── (public)          # Public routes
+ │    │    ├── page.tsx     # Logic: Fetch trending products
+ │    │    └── shop/
+ │    ├── (auth)            # Auth routes
+ │    │    ├── login/
+ │    │    └── register/
+ │    ├── (protected)       # Protected routes layout checks Auth
+ │    │    ├── buyer/       # Cart, Checkout, Favorites
+ │    │    ├── seller/      # Dashboard, Add Product
+ │    │    └── admin/       # Admin controls
+ │
+ ├── /components
+ │    ├── /ui               # Shadcn primitives (Button, Input)
+ │    ├── /modules          # Feature-specific UI
+ │    │    ├── /auth        # LoginForm.tsx (UI only)
+ │    │    ├── /product     # ProductCard.tsx, ProductGrid.tsx
+ │    │    └── /cart        # CartItem.tsx, CartSummary.tsx
+ │    └── /layout           # Navbar.tsx, Sidebar.tsx
+ │
+ ├── /lib
+ │    ├── api.ts            # Axios/Fetch setup
+ │    └── utils.ts          # Helper functions
+ │
+ └── /hooks
+      ├── useCart.ts        # Logic: LocalStorage vs Backend sync
+      └── useAuth.ts        # Logic: Login/Register/Role check
