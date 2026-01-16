@@ -16,6 +16,8 @@ interface FavoriteButtonProps {
 export function FavoriteButton({ productId, className }: FavoriteButtonProps) {
     const { isFavorite, toggleFavorite, isLoading } = useFavorites(productId);
 
+   
+
     return (
         <Button
             variant="ghost"

@@ -1,45 +1,67 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
+import { prisma } from "@/lib/db"; // Use our DB connection
+import bcrypt from "bcryptjs";
 
 export async function POST(request: Request) {
-    const body = await request.json();
+    try {
+        const body = await request.json();
 
-    // 1. Forward registration to json-server
-    const res = await fetch(`${BACKEND_URL}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-    });
+        // 1. Check if user already exists
+        const existingUser = await prisma.user.findUnique({
+            where: { email: body.email }
+        });
 
-    const data = await res.json();
+        if (existingUser) {
+            return NextResponse.json({ message: "Email already taken" }, { status: 400 });
+        }
 
-    if (!res.ok) {
-        return NextResponse.json({ message: data }, { status: res.status });
+        // 2. Create the User in Neon
+        // FIX: Hash the password before saving to Neon
+        const hashedPassword = await bcrypt.hash(body.password, 10);
+
+        const user = await prisma.user.create({
+            data: {
+                name: body.name,
+                email: body.email,
+                password: hashedPassword,
+                role: "buyer", // Default to buyer, or use body.role if your form allows selecting it
+            }
+        });
+
+        // 3. Generate Token (Same logic as Login)
+        // We create the token manually since json-server-auth is gone
+        const tokenPayload = JSON.stringify({ id: user.id, email: user.email });
+        const token = Buffer.from(tokenPayload).toString("base64");
+
+        // 4. Set Cookies
+        const cookieStore = await cookies();
+
+        // HttpOnly Cookie
+        cookieStore.set({
+            name: "session_token",
+            value: token,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            path: "/",
+            maxAge: 60 * 60 * 24 * 7, // 1 week
+        });
+
+        // Public Role Cookie
+        cookieStore.set({
+            name: "user_role",
+            value: user.role,
+            path: "/",
+            maxAge: 60 * 60 * 24 * 7,
+        });
+
+        // 5. Return User (Remove password from response)
+        const { password, ...userWithoutPassword } = user;
+        return NextResponse.json({ user: userWithoutPassword });
+
+    } catch (error) {
+        console.error("Registration Error:", error);
+        return NextResponse.json({ message: "Registration failed" }, { status: 500 });
     }
-
-    // 2. Set the HttpOnly Cookie (Same as Login)
-    const token = data.accessToken;
-    const user = data.user;
-
-    (await cookies()).set({
-        name: "session_token",
-        value: token,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-    });
-
-    // Optional: Set Role cookie for middleware checks
-    (await cookies()).set({
-        name: "user_role",
-        value: user.role,
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-    });
-
-    return NextResponse.json({ user });
 }

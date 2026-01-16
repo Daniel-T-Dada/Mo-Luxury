@@ -1,0 +1,332 @@
+{
+  "users": [
+    {
+      "email": "simplytobs@gmail.com",
+      "password": "$2a$10$fSH7Qke0u3xrOyotQvgdUOO2QLp20Y8MiWMMAGuFhAbJGrLxBa91i",
+      "name": "Daniel Dada",
+      "role": "admin",
+      "id": 1
+    },
+    {
+      "email": "seller@mo.com",
+      "password": "$2a$10$4UBlMgl4ctmUo.7jF7vyp.BaIG/0cgvbdwRuz1uO7DTxJ9l5IMorK",
+      "name": "Seller ByName",
+      "role": "seller",
+      "id": 2
+    },
+    {
+      "email": "danbuy@mo.com",
+      "password": "$2a$10$helOJnIQ17PEWL2BkUZ2cuPozuqqmHPgNJ2EvcmOZHkPDw912fSFK",
+      "name": "Dan Buy",
+      "role": "buyer",
+      "id": 3
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "sellerId": 1,
+      "name": "Classic Denim Jacket",
+      "price": 45000,
+      "category": "Jacket",
+      "gender": "male",
+      "image": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=500&q=80"
+    },
+    {
+      "id": 2,
+      "sellerId": 1,
+      "name": "Summer Floral Dress",
+      "price": 32500,
+      "category": "Dress",
+      "gender": "female",
+      "image": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=500&q=80"
+    },
+    {
+      "id": 3,
+      "sellerId": 1,
+      "name": "Urban Street Hoodie",
+      "price": 25000,
+      "category": "Hoodie",
+      "gender": "male",
+      "image": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500&q=80"
+    },
+    {
+      "id": 4,
+      "sellerId": 1,
+      "name": "Elegant Office Blazer",
+      "price": 55000,
+      "category": "Blazer",
+      "gender": "female",
+      "image": "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&q=80"
+    },
+    {
+      "id": 5,
+      "sellerId": 1,
+      "name": "Graphic Print Tee",
+      "price": 12000,
+      "category": "T-Shirt",
+      "gender": "male",
+      "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&q=80"
+    },
+    {
+      "id": 6,
+      "sellerId": 1,
+      "name": "High-Waist Skinny Jeans",
+      "price": 18500,
+      "category": "Jeans",
+      "gender": "female",
+      "image": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&q=80"
+    },
+    {
+      "id": 7,
+      "sellerId": 1,
+      "name": "Slim Fit Chinos",
+      "price": 22000,
+      "category": "Trousers",
+      "gender": "male",
+      "image": "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=500&q=80"
+    },
+    {
+      "id": 8,
+      "sellerId": 1,
+      "name": "Pleated Midi Skirt",
+      "price": 15000,
+      "category": "Skirt",
+      "gender": "female",
+      "image": "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=500&q=80"
+    },
+    {
+      "id": 9,
+      "sellerId": 1,
+      "name": "Modern Grey Suit",
+      "price": 85000,
+      "category": "Suit",
+      "gender": "male",
+      "image": "https://images.unsplash.com/photo-1635205383325-aa3e6fb5ba55?w=500&q=80"
+    },
+    {
+      "id": 10,
+      "sellerId": 1,
+      "name": "Silk Chiffon Blouse",
+      "price": 28000,
+      "category": "Blouse",
+      "gender": "female",
+      "image": "https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=500&q=80"
+    },
+    {
+      "id": 11,
+      "sellerId": 1,
+      "name": "Red Air Runner Sneakers",
+      "price": 45000,
+      "category": "Shoes",
+      "gender": "male",
+      "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80"
+    },
+    {
+      "id": 12,
+      "sellerId": 1,
+      "name": "Tan Leather Tote Bag",
+      "price": 38000,
+      "category": "Accessories",
+      "gender": "female",
+      "image": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500&q=80"
+    },
+    {
+      "id": 13,
+      "sellerId": 1,
+      "name": "Little Princess Party Dress",
+      "price": 15000,
+      "category": "Kids",
+      "gender": "kids",
+      "image": "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=500&q=80"
+    },
+    {
+      "id": 14,
+      "sellerId": 1,
+      "name": "Boys Striped Polo Shirt",
+      "price": 12000,
+      "category": "Kids",
+      "gender": "kids",
+      "image": "https://images.unsplash.com/photo-1708712147976-82c1f4e39ea8?w=500&q=80"
+    },
+    {
+      "id": 15,
+      "sellerId": 1,
+      "name": "Oversized Knitted Sweater",
+      "price": 28000,
+      "category": "Sweater",
+      "gender": "female",
+      "image": "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=500&q=80"
+    },
+    {
+      "id": 16,
+      "sellerId": 1,
+      "name": "Chelsea Leather Boots",
+      "price": 50000,
+      "category": "Shoes",
+      "gender": "male",
+      "image": "https://images.unsplash.com/photo-1638247025967-b4e38f787b76?w=500&q=80"
+    },
+    {
+      "name": "Men Blue Suit",
+      "price": 50000,
+      "category": "Dress",
+      "gender": "male",
+      "image": "https://images.unsplash.com/photo-1592878956815-2feeac767f7b?q=80&w=2080&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "sellerId": 2,
+      "id": 17
+    },
+    {
+      "name": "Unisex loose fitting bubu",
+      "price": 40000,
+      "category": "Dress",
+      "gender": "unisex",
+      "image": "https://images.unsplash.com/photo-1663044022557-7d5d4c1d5318?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "sellerId": 2,
+      "id": 18
+    },
+    {
+      "name": "African traditional colorful clothes",
+      "price": 20000,
+      "category": "Dress",
+      "gender": "female",
+      "image": "https://images.unsplash.com/photo-1709809081557-78f803ce93a0?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "sellerId": 1,
+      "id": 19
+    }
+  ],
+  "orders": [
+    {
+      "userId": 1,
+      "items": [
+        {
+          "userId": 1,
+          "productId": 5,
+          "quantity": 1,
+          "id": 1,
+          "product": {
+            "id": 5,
+            "sellerId": 1,
+            "name": "Graphic Print Tee",
+            "price": 12000,
+            "category": "T-Shirt",
+            "gender": "male",
+            "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&q=80"
+          }
+        },
+        {
+          "userId": 1,
+          "productId": 6,
+          "quantity": 1,
+          "id": 2,
+          "product": {
+            "id": 6,
+            "sellerId": 1,
+            "name": "High-Waist Skinny Jeans",
+            "price": 18500,
+            "category": "Jeans",
+            "gender": "female",
+            "image": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500&q=80"
+          }
+        },
+        {
+          "userId": 1,
+          "productId": 8,
+          "quantity": 1,
+          "id": 3,
+          "product": {
+            "id": 8,
+            "sellerId": 1,
+            "name": "Pleated Midi Skirt",
+            "price": 15000,
+            "category": "Skirt",
+            "gender": "female",
+            "image": "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=500&q=80"
+          }
+        },
+        {
+          "userId": 1,
+          "productId": 7,
+          "quantity": 1,
+          "id": 4,
+          "product": {
+            "id": 7,
+            "sellerId": 1,
+            "name": "Slim Fit Chinos",
+            "price": 22000,
+            "category": "Trousers",
+            "gender": "male",
+            "image": "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=500&q=80"
+          }
+        },
+        {
+          "userId": 1,
+          "productId": 11,
+          "quantity": 1,
+          "id": 5,
+          "product": {
+            "id": 11,
+            "sellerId": 1,
+            "name": "Red Air Runner Sneakers",
+            "price": 45000,
+            "category": "Shoes",
+            "gender": "male",
+            "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80"
+          }
+        },
+        {
+          "userId": 1,
+          "productId": 3,
+          "quantity": 1,
+          "id": 6,
+          "product": {
+            "id": 3,
+            "sellerId": 1,
+            "name": "Urban Street Hoodie",
+            "price": 25000,
+            "category": "Hoodie",
+            "gender": "male",
+            "image": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500&q=80"
+          }
+        },
+        {
+          "userId": 1,
+          "productId": 4,
+          "quantity": 1,
+          "id": 7,
+          "product": {
+            "id": 4,
+            "sellerId": 1,
+            "name": "Elegant Office Blazer",
+            "price": 55000,
+            "category": "Blazer",
+            "gender": "female",
+            "image": "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&q=80"
+          }
+        }
+      ],
+      "total": 195000,
+      "status": "pending",
+      "date": "2026-01-16T11:15:14.889Z",
+      "shipping": {
+        "address": "123",
+        "city": "Lagos",
+        "phone": "123456789"
+      },
+      "id": 1
+    }
+  ],
+  "carts": [],
+  "favorites": [
+    {
+      "userId": 1,
+      "productId": 2,
+      "id": 1
+    },
+    {
+      "userId": 1,
+      "productId": 19,
+      "id": 2
+    }
+  ]
+}

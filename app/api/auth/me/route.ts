@@ -1,56 +1,35 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
+import { prisma } from "@/lib/db";
 
 export async function GET() {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("session_token")?.value;
-
-    // 1. If no token, user is not logged in
-    if (!token) {
-        return NextResponse.json({ user: null }, { status: 401 });
-    }
-
     try {
-        // 2. Decode the JWT to find the User ID
-        // JWT structure: Header.Payload.Signature
-        // We need the Payload (middle part)
-        const payloadBase64 = token.split('.')[1];
+        // 1. Get the session token from cookies
+        const cookieStore = await cookies();
+        const token = cookieStore.get("session_token")?.value;
 
-        // Convert base64 to string
-        const decodedJson = Buffer.from(payloadBase64, 'base64').toString();
-        const payload = JSON.parse(decodedJson);
-
-        // In json-server-auth, 'sub' usually holds the User ID as a string or number
-        const userId = payload.sub;
-
-        if (!userId) {
-            throw new Error("Invalid Token Structure");
+        if (!token) {
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
-        // 3. Fetch the User from Backend
-        // We attach the token because the /users endpoint might be protected
-        const res = await fetch(`${BACKEND_URL}/users/${userId}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+        // 2. Decode the token (Reverse of what we did in Login)
+        const decodedStr = Buffer.from(token, "base64").toString("utf-8");
+        const sessionData = JSON.parse(decodedStr);
+
+        // 3. Fetch User from DB to ensure they still exist
+        const user = await prisma.user.findUnique({
+            where: { id: sessionData.id }
         });
 
-        if (!res.ok) {
-            // If the token is invalid or user deleted, clear cookies
-            cookieStore.delete("session_token");
-            cookieStore.delete("user_role");
-            return NextResponse.json({ user: null }, { status: 401 });
+        if (!user) {
+            return NextResponse.json({ message: "User not found" }, { status: 401 });
         }
 
-        const user = await res.json();
-
-        // 4. Return the User
-        return NextResponse.json({ user });
+        // 4. Return user info
+        const { password, ...userWithoutPassword } = user;
+        return NextResponse.json(userWithoutPassword);
 
     } catch (error) {
-        console.error("Session Check Failed:", error);
-        return NextResponse.json({ user: null }, { status: 401 });
+        return NextResponse.json({ message: "Invalid Session" }, { status: 401 });
     }
 }

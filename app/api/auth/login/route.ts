@@ -1,48 +1,67 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
+import { prisma } from "@/lib/db";
+import bcrypt from "bcryptjs";
 
 export async function POST(request: Request) {
+  try {
     const body = await request.json();
+    console.log("🔍 Login Attempt:", body.email); // Log the email being tried
 
-    // 1. Call the actual Backend
-    const res = await fetch(`${BACKEND_URL}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+    const user = await prisma.user.findUnique({
+      where: { email: body.email }
     });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-        return NextResponse.json({ message: data }, { status: res.status });
+    if (!user) {
+        console.log("❌ User not found in database");
+        return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
 
-    // 2. Get the token
-    const token = data.accessToken;
-    const user = data.user;
+    console.log("✅ User found. ID:", user.id);
+    // console.log("🔑 Stored Hash:", user.password); // Uncomment if you really need to check the hash
 
-    // 3. Set the HttpOnly Cookie
-    // This is the magic part. The browser will receive this and lock it away.
-    (await cookies()).set({
+    const isPasswordValid = await bcrypt.compare(body.password, user.password);
+    const isPlainMatch = user.password === body.password;
+
+    console.log("🔒 Bcrypt Match:", isPasswordValid);
+    console.log("📝 Plain Text Match:", isPlainMatch);
+
+    if (!isPasswordValid && !isPlainMatch) {
+      console.log("⛔ Password mismatch");
+      return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
+    }
+
+    console.log("🎉 Login Successful!");
+
+    // ... (Keep your Token and Cookie logic exactly as it was) ...
+    // ... Copy the rest of the file from the previous step ...
+    
+    // --- Re-pasting the token logic for clarity ---
+    const tokenPayload = JSON.stringify({ id: user.id, email: user.email });
+    const token = Buffer.from(tokenPayload).toString("base64");
+
+    const cookieStore = await cookies();
+    cookieStore.set({
         name: "session_token",
         value: token,
-        httpOnly: true, // JavaScript cannot read this
+        httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
         path: "/",
-        maxAge: 60 * 60 * 24 * 7, // 1 week
+        maxAge: 60 * 60 * 24 * 7,
     });
-
-    // We also set a public cookie for the Role so the UI knows what to show
-    // (This is safe because changing it manually won't give them admin access on the server)
-    (await cookies()).set({
+    cookieStore.set({
         name: "user_role",
         value: user.role,
         path: "/",
         maxAge: 60 * 60 * 24 * 7,
     });
 
-    return NextResponse.json({ user });
+    const { password, ...userWithoutPassword } = user;
+    return NextResponse.json({ user: userWithoutPassword });
+
+  } catch (error) {
+    console.error("💥 Login Error Detailed:", error);
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+  }
 }
