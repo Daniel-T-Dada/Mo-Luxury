@@ -12,11 +12,14 @@ export interface CartItem {
     id: number; // This is the ID of the CART ENTRY, not the product
     productId: number;
     quantity: number;
+    selectedSize?: string;
+    selectedColor?: string;
     product: { // Expanded details
         name: string;
         price: number;
         image: string;
         category: string;
+        campaign?: any;
     };
 }
 
@@ -42,9 +45,7 @@ export function useCartItems() {
                 }));
                 setItems(formatted);
             } else {
-                // USER: Fetch from Backend with _expand
-                // GET /carts?userId=1&_expand=product
-                const data = await apiRequest(`/carts?userId=${user.id}&_expand=product`);
+                const data = await apiRequest(`/carts?userId=${user.id}`);
                 setItems(data);
             }
         } catch (error) {

@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,73 +9,69 @@ import { useRouter } from "next/navigation";
 export function useSellerDashboard() {
     const { user } = useAuth();
     const router = useRouter();
+    const [isLoading, setIsLoading] = useState(true);
 
     const [data, setData] = useState({
         products: [],
-        totalRevenue: 0,
-        totalOrders: 0
+        stats: {
+            totalRevenue: 0,
+            totalOrders: 0,
+            totalProducts: 0
+        }
     });
-    const [isLoading, setIsLoading] = useState(true);
+
+    // 1. Guard Clause
+    useEffect(() => {
+        if (user && user.role !== "seller" && user.role !== "admin") {
+            router.push("/");
+        }
+    }, [user, router]);
+
+    // 2. Fetch Data
+    const fetchData = async () => {
+        if (!user) return;
+
+        try {
+            const [stats, myProducts] = await Promise.all([
+                apiRequest(`/seller/stats?sellerId=${user.id}`), // 👈 NEW SMART API
+                apiRequest(`/products?sellerId=${user.id}`)      // 👈 Filtered products
+            ]);
+
+            setData({
+                stats,
+                products: myProducts
+            });
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to load dashboard");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        if (!user || (user.role !== "seller" && user.role !== "admin")) {
-            return;
-        }
-
-        const fetchData = async () => {
-            try {
-                // 1. Fetch My Products
-                const myProducts = await apiRequest(`/products?sellerId=${user.id}`);
-
-                // 2. Fetch ALL Orders (json-server limitation: we must fetch all to filter)
-                // In a real DB, you would do: GET /orders?items.product.sellerId=1
-                const allOrders = await apiRequest("/orders");
-
-                // 3. Calculate Revenue
-                let revenue = 0;
-                let orderCount = 0;
-
-                allOrders.forEach((order: any) => {
-                    let hasMyProduct = false;
-
-                    order.items.forEach((item: any) => {
-                        // Check if this specific item belongs to ME
-                        if (item.product.sellerId === user.id) {
-                            revenue += item.product.price * item.quantity;
-                            hasMyProduct = true;
-                        }
-                    });
-
-                    if (hasMyProduct) orderCount++;
-                });
-
-                setData({
-                    products: myProducts,
-                    totalRevenue: revenue,
-                    totalOrders: orderCount
-                });
-
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
         fetchData();
     }, [user]);
 
+    // 3. Delete Action
     const deleteProduct = async (id: number) => {
-        if (!confirm("Are you sure?")) return;
+        // Note: Confirm logic is usually handled in the UI component, but we can keep it here for simplicity
         try {
             await apiRequest(`/products/${id}`, { method: "DELETE" });
             toast.success("Product deleted");
-            // Reload logic would go here or use a reload trigger
-            window.location.reload();
+            fetchData(); // Re-fetch to update UI
         } catch (err) {
             toast.error("Failed to delete");
         }
     };
 
-    return { ...data, deleteProduct, isLoading, user };
+    return {
+        products: data.products,
+        totalRevenue: data.stats.totalRevenue,
+        totalOrders: data.stats.totalOrders,
+        totalProducts: data.stats.totalProducts,
+        deleteProduct,
+        isLoading,
+        user
+    };
 }

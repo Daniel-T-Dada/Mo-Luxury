@@ -7,48 +7,53 @@ import ProductList from "@/components/seller/ProductList";
 import { UsersTable } from "@/components/admin/UsersTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 const AdminDashboard = () => {
-  // The hook provides everything: data AND actions
   const {
     orders,
     products,
     users,
-    financials,
+    stats, // 👈 New Structure
     isLoading,
     user,
-    deleteProduct // We get the function from here now
+    deleteProduct
   } = useAdminData();
 
-  if (!user || isLoading) return <div className="p-10 text-center">Loading Dashboard...</div>;
+  if (!user || isLoading) return (
+    <div className="flex h-[50vh] items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Admin Overview</h1>
+          <p className="text-muted-foreground">Manage your platform, users, and inventory.</p>
+        </div>
 
         <Link href="/seller/products/add">
           <Button className="gap-2">
-            <Plus className="h-4 w-4" /> Add New Product
+            <Plus className="h-4 w-4" /> Add Product
           </Button>
         </Link>
       </div>
 
-      {/* Note: We use financials.totalEarnings for the main revenue stat */}
       <AdminStats
-        revenue={financials.totalEarnings}
-        ordersCount={orders.length}
-        productsCount={products.length}
-        usersCount={users.length}
+        revenue={stats.totalRevenue}
+        ordersCount={stats.ordersCount}
+        productsCount={stats.productsCount}
+        usersCount={stats.usersCount}
       />
 
-      <Tabs defaultValue="orders" className="w-full">
-        <TabsList>
+      <Tabs defaultValue="orders" className="w-full space-y-6">
+        <TabsList className="bg-muted/50 p-1">
           <TabsTrigger value="orders">Recent Orders</TabsTrigger>
           <TabsTrigger value="inventory">All Inventory</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="users">User Management</TabsTrigger>
         </TabsList>
 
         <TabsContent value="orders">
@@ -58,7 +63,7 @@ const AdminDashboard = () => {
         <TabsContent value="inventory">
           <ProductList
             products={products}
-            onDelete={deleteProduct} // Pass the hook function directly
+            onDelete={deleteProduct}
           />
         </TabsContent>
 

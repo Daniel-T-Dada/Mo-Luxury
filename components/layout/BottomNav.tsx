@@ -5,12 +5,13 @@ import { usePathname } from "next/navigation";
 import { Home, ShoppingBag, ShoppingCart, User, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCartCount } from "@/hooks/use-cart-count";
-import { useFavoritesCount } from "@/hooks/use-favourites-count"; // Ensure this filename matches your file
+import { useFavorites } from "@/context/favorite-context";
 
 const BottomNav = () => {
     const pathname = usePathname();
     const cartCount = useCartCount();
-    const favCount = useFavoritesCount();
+    const { favoriteIds } = useFavorites();
+        const favCount = favoriteIds.length;
 
     const navItems = [
         { href: "/", label: "Home", icon: Home },

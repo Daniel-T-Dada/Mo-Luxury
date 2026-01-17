@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -10,18 +8,22 @@ export interface Order {
     id: number;
     total: number;
     status: string;
-    date: string;
+    date: string; // Mapped from createdAt
     items: Array<{
+        quantity: number;
+        selectedSize?: string;
+        selectedColor?: string;
         product: {
             name: string;
             image: string;
-            price: number; // <--- Added this line
+            price: number;
+            category: string;
         };
-        quantity: number;
     }>;
     shipping: {
         address: string;
         city: string;
+        phone?: string; // Made optional to match type safety
     };
 }
 
@@ -31,11 +33,16 @@ export function useOrders() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!user) return;
+        // Don't fetch if no user
+        if (!user) {
+            setIsLoading(false);
+            return;
+        }
 
         const fetchOrders = async () => {
             try {
-                const data = await apiRequest(`/orders?userId=${user.id}&_sort=date&_order=desc`);
+                // ✅ CLEAN URL: Sorting is now handled by the Backend
+                const data = await apiRequest(`/orders?userId=${user.id}`);
                 setOrders(data);
             } catch (error) {
                 console.error("Failed to fetch orders", error);

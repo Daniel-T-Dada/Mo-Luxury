@@ -19,50 +19,133 @@ model User {
   password  String
   name      String
   role      String   @default("buyer") // admin, seller, buyer
+  
+  // 🕒 Time Tracking
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+
+  // Relations
   orders    Order[]
-  products  Product[] // For sellers
+  products  Product[] 
   favorites Favorite[]
+  cartItems CartItem[]
+}
+
+// 1. CAMPAIGNS (For Promos & Flash Sales)
+model Campaign {
+  id          Int       @id @default(autoincrement())
+  name        String    // e.g. "Xmas Promo"
+  startDate   DateTime
+  endDate     DateTime
+  discount    Int       // Percentage (e.g. 20)
+  isActive    Boolean   @default(true)
+  
+  products    Product[] // Which products are on sale?
+  
+  createdAt   DateTime  @default(now())
 }
 
 model Product {
-  id        Int      @id @default(autoincrement())
-  name      String
-  price     Int
-  category  String
-  gender    String
-  image     String
-  sellerId  Int
-  seller    User     @relation(fields: [sellerId], references: [id])
-  items     OrderItem[]
-  favorites Favorite[]
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?  @db.Text // Long description
+  price       Int      
+  
+  // 2. CATEGORIZATION (Robust)
+  category    String   // e.g. "Hoodie", "Dress"
+  gender      String   @default("unisex") // "male", "female", "unisex"
+  ageGroup    String   @default("adult")  // "adult", "kids", "baby"
+  
+  // 3. OPTIONS (Simple Lists)
+  sizes       String[] // e.g. ["S", "M", "L", "4Y", "6Y"]
+  colors      String[] // e.g. ["Red", "Navy"]
+  
+  // 4. INVENTORY
+  stock       Int      @default(10)
+  sold        Int      @default(0)
+  
+  // 5. RELATIONS
+  campaignId  Int?
+  campaign    Campaign? @relation(fields: [campaignId], references: [id])
+
+  image       String
+  sellerId    Int
+  seller      User     @relation(fields: [sellerId], references: [id])
+  items       OrderItem[]
+  favorites   Favorite[]
+  cartItems   CartItem[]
+  
+  // 6. TIME TRACKING
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt @default(now())
+}
+
+model CartItem {
+  id            Int      @id @default(autoincrement())
+  quantity      Int      @default(1)
+  selectedSize  String?
+  selectedColor String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt @default(now())
+
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+
+  productId     Int
+  product       Product  @relation(fields: [productId], references: [id])
+
+  @@index([userId])
+  @@index([productId])
 }
 
 model Order {
-  id        Int      @id @default(autoincrement())
-  total     Int
-  status    String   @default("pending")
-  date      DateTime @default(now())
-  shipping  String? 
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  items     OrderItem[]
+  id              Int         @id @default(autoincrement())
+  total           Float
+  status          String      @default("processing") // pending, processing, shipped, delivered
+  createdAt       DateTime    @default(now())
+  
+  // Shipping Details (Stored flat for simplicity)
+  shippingAddress String
+  shippingCity    String
+  shippingPhone   String
+  
+  // Relations
+  userId          Int
+  user            User        @relation(fields: [userId], references: [id])
+  items           OrderItem[]
 }
 
 model OrderItem {
-  id        Int     @id @default(autoincrement())
-  orderId   Int
-  order     Order   @relation(fields: [orderId], references: [id])
-  productId Int
-  product   Product @relation(fields: [productId], references: [id])
-  quantity  Int
+  id            Int      @id @default(autoincrement())
+  quantity      Int
+  price         Float    // ⚠️ Save price at time of purchase (in case product price changes later)
+  
+  // Variants
+  selectedSize  String?
+  selectedColor String?
+
+  // Relations
+  orderId       Int
+  order         Order    @relation(fields: [orderId], references: [id])
+  productId     Int
+  product       Product  @relation(fields: [productId], references: [id])
 }
 
+// Add or Update this model
 model Favorite {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
+  
   userId    Int
-  user      User    @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  
   productId Int
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  // Ensure a user can't favorite the same item twice
+  @@unique([userId, productId]) 
 }
 
 model HeroSlide {
@@ -70,6 +153,9 @@ model HeroSlide {
   image     String
   title     String
   subtitle  String
-  cta       String   @default("Shop Now") // Button text
-  link      String   @default("/shop")    // Where the button goes
+  cta       String   @default("Shop Now")
+  link      String   @default("/shop")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
 }

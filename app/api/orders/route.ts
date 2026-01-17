@@ -1,62 +1,103 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-// GET /api/orders (Supports ?userId=... and sorting)
-export async function GET(request: Request) {
-    const { searchParams } = new URL(request.url);
+export async function GET(req: Request) {
+    const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
-    const sort = searchParams.get("_sort"); // Support json-server style sorting if needed
 
-    const where = userId ? { userId: Number(userId) } : {};
+    // 👇 REMOVED THE STRICT CHECK HERE
+    // if (!userId) { return NextResponse.json({ error: "User ID required" }, { status: 400 }); }
 
     try {
+        // 1. Build the filter dynamically
+        const whereClause: any = {};
+        if (userId) {
+            whereClause.userId = Number(userId);
+        }
+
+        // 2. Fetch Orders (Either specific user's OR all of them)
         const orders = await prisma.order.findMany({
-            where,
+            where: whereClause, // If empty, it fetches everything
             include: {
                 items: {
-                    include: { product: true } // Include product details in the order items
-                }
+                    include: {
+                        product: true,
+                    },
+                },
             },
-            orderBy: {
-                date: 'desc' // Default to newest first
-            }
+            orderBy: { createdAt: "desc" },
         });
-        return NextResponse.json(orders);
+
+        // 3. Format the data
+        const formattedOrders = orders.map(order => ({
+            ...order,
+            date: order.createdAt.toISOString(),
+            shipping: {
+                address: order.shippingAddress,
+                city: order.shippingCity,
+                phone: order.shippingPhone
+            }
+        }));
+
+        return NextResponse.json(formattedOrders);
     } catch (error) {
+        console.error("Orders fetch error:", error);
         return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
     }
 }
 
-// POST /api/orders (Create Order + Items)
-export async function POST(request: Request) {
+// POST remains the same...
+export async function POST(req: Request) {
+    // ... your existing POST logic
     try {
-        const body = await request.json();
+        const body = await req.json();
+        const { userId, items, total, shipping } = body;
 
-        // Ensure body.items exists and map it correctly for Prisma
-        // Assuming body.items is: [{ productId: 1, quantity: 2 }, ...]
-        const orderItems = body.items.map((item: any) => ({
-            productId: item.productId,
-            quantity: item.quantity
-        }));
+        // Transaction: Create Order -> Create OrderItems -> Clear Cart
+        const result = await prisma.$transaction(async (tx) => {
+            // A. Create the Order
+            const newOrder = await tx.order.create({
+                data: {
+                    userId: Number(userId),
+                    total: total,
+                    status: "processing",
+                    shippingAddress: shipping.address,
+                    shippingCity: shipping.city,
+                    shippingPhone: shipping.phone,
+                    items: {
+                        create: items.map((item: any) => ({
+                            productId: item.productId, // OR item.product.id depending on what you pass
+                            quantity: item.quantity,
+                            price: item.product.price, // Save the CURRENT price
+                            selectedSize: item.selectedSize,
+                            selectedColor: item.selectedColor,
+                        })),
+                    },
+                },
+            });
 
-        const order = await prisma.order.create({
-            data: {
-                userId: body.userId,
-                total: body.total,
-                status: "pending",
-                shipping: body.shipping ? JSON.stringify(body.shipping) : null, // Handle shipping address if schema allows, or skip
-                items: {
-                    create: orderItems // This magic line creates all items automatically!
-                }
-            },
-            include: {
-                items: true // Return the created items in the response
+            // B. Clear the User's Cart
+            await tx.cartItem.deleteMany({
+                where: { userId: Number(userId) },
+            });
+
+            // C. Decrease Stock (Optional, but good practice)
+            for (const item of items) {
+                await tx.product.update({
+                    where: { id: item.productId },
+                    data: {
+                        stock: { decrement: item.quantity },
+                        sold: { increment: item.quantity }
+                    }
+                });
             }
+
+            return newOrder;
         });
-        
-        return NextResponse.json(order);
+
+        return NextResponse.json(result);
     } catch (error) {
-        console.error(error);
+        console.error("Order creation error:", error);
         return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
     }
 }

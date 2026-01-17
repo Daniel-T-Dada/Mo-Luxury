@@ -5,6 +5,9 @@ import { AuthProvider } from "@/context/auth-context";
 import { Toaster } from "@/components/ui/sonner";
 import TopNav from "@/components/layout/TopNav";
 import BottomNav from "@/components/layout/BottomNav";
+import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
+import { ThemeProvider } from "@/context/theme-provider";
+import { FavoriteProvider } from "@/context/favorite-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,12 +35,22 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <TopNav />
-          <main className="min-h-screen bg-background pb-20 md:pb-8">
-            {children}
-          </main>
-          <Toaster />
-          <BottomNav />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <AnnouncementBar />
+            <FavoriteProvider>
+            <TopNav />
+            <main className="min-h-screen bg-background pb-20 md:pb-8">
+              {children}
+            </main>
+            <Toaster />
+              <BottomNav />
+            </FavoriteProvider>
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

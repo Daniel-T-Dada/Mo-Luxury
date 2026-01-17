@@ -1,55 +1,94 @@
+import { prisma } from "@/lib/db";
+import { Product } from "../generated/prisma/client";
 
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
-
+// 1. Get Featured (Trending) Products
 export async function getFeaturedProducts() {
     try {
-        // "no-store" ensures we get fresh data every time (good for selling fast-moving items)
-        const res = await fetch(`${BACKEND_URL}/products?_limit=4`, {
-            cache: "no-store"
+        const products = await prisma.product.findMany({
+            take: 4,                      // Limit to 4
+            orderBy: { createdAt: 'desc' }, // 👈 SORTING LOGIC HERE (Newest First)
+            where: {
+                stock: { gt: 0 }          // Optional: Only show items in stock
+            },
+            include: {
+                campaign: true,
+            }
         });
-
-        if (!res.ok) throw new Error("Failed to fetch");
-        return res.json();
+        return products;
     } catch (e) {
         console.error("Product service error:", e);
-        return []; // Return empty array gracefully so the page doesn't crash
-    }
-}
-
-export async function getProducts(filters: Record<string, string> = {}) {
-    try {
-        // 1. Build Query String (e.g., ?gender=male&category=shoes)
-        const params = new URLSearchParams();
-
-        Object.entries(filters).forEach(([key, value]) => {
-            if (value) params.append(key, value);
-        });
-
-        // 2. Fetch
-        const res = await fetch(`${BACKEND_URL}/products?${params.toString()}`, {
-            cache: "no-store",
-        });
-
-        if (!res.ok) throw new Error("Failed to fetch products");
-        return res.json();
-    } catch (e) {
-        console.error(e);
         return [];
     }
 }
 
-// ... existing imports and functions
+// 2. Get Products with Filters (Shop Page)
+export async function getProducts(filters: Record<string, string> = {}) {
+    try {
+        // Build the "Where" clause dynamically
+        const where: any = {};
 
+        if (filters.category) where.category = filters.category;
+        if (filters.gender) where.gender = filters.gender;
+
+        // Handle search query if you have one
+        if (filters.search) {
+            where.name = { contains: filters.search, mode: 'insensitive' };
+        }
+
+        const products = await prisma.product.findMany({
+            where: where,
+            orderBy: { createdAt: 'desc' }, // Always show newest first in shop too
+        });
+
+        return products;
+    } catch (e) {
+        console.error("Filter error:", e);
+        return [];
+    }
+}
+
+// 3. Get Single Product (Product Details Page)
 export async function getProductById(id: string) {
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
-            cache: "no-store",
+        const product = await prisma.product.findUnique({
+            where: { id: Number(id) }, 
+            include: {
+                seller: { 
+                    select: { name: true, email: true }
+                },
+                campaign: true,
+            }
         });
-        if (!res.ok) return null;
-        return res.json();
+        return product;
     } catch (error) {
         console.error("Failed to fetch product", error);
         return null;
+    }
+}
+
+// 👇 ADD THIS NEW FUNCTION
+export async function getFlashSaleProducts() {
+    try {
+        const products = await prisma.product.findMany({
+            where: {
+                campaign: {
+                    isActive: true, // Only fetch items with an active campaign
+                },
+                stock: { gt: 0 }
+            },
+            take: 4,
+            include: {
+                campaign: true, // IMPORTANT
+            },
+            orderBy: {
+                campaign: {
+                    discount: 'desc' // Show highest discounts first
+                }
+            }
+        });
+        return products;
+    } catch (e) {
+        console.error("Flash sale error:", e);
+        return [];
     }
 }

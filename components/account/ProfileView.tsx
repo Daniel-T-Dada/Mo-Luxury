@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Package, Settings, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 interface ProfileViewProps {
     user: any;
@@ -32,6 +33,7 @@ const ProfileView =({ user, logout }: ProfileViewProps) =>{
                     <p className="text-sm text-muted-foreground">{user.email}</p>
                     <p className="text-xs font-medium capitalize text-primary mt-1">{user.role} Account</p>
                 </div>
+                <ThemeToggle  />
             </div>
 
             <div className="grid gap-4">

@@ -16,13 +16,14 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useCartItems } from "@/hooks/use-cart-items";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getProductPrice } from "@/lib/utils";
 
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
-import  CartItem  from "./CartItem";
+import CartItem from "./CartItem";
+
 
 const CartSheet = ({ children }: { children: React.ReactNode }) => {
     const { items, isLoading, removeItem, updateQuantity } = useCartItems();
@@ -31,7 +32,10 @@ const CartSheet = ({ children }: { children: React.ReactNode }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     // Calculate Total
-    const total = items.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+    const total = items.reduce((acc, item) => {
+        const { final } = getProductPrice(item.product as any);
+        return acc + (final * item.quantity);
+    }, 0);
 
     const handleCheckout = () => {
         setIsOpen(false); // Close sheet

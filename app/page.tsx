@@ -3,6 +3,7 @@ import { Hero } from "@/components/home/Hero";
 import { Trending } from "@/components/home/Trending";
 import { getFeaturedProducts } from "@/lib/services/products";
 import { prisma } from "@/lib/db";
+import { FlashSales } from "@/components/home/FlashSales";
 
 export const dynamic = "force-dynamic"
 
@@ -17,6 +18,7 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col gap-6">
       <Hero slides={slides} />
+      <FlashSales products={products} />
       <Categories />
       <Trending products={products} />
     </div>

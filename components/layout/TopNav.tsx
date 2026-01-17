@@ -4,12 +4,14 @@ import Link from "next/link";
 import { ShoppingCart, User, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartCount } from "@/hooks/use-cart-count";
-import { useFavoritesCount } from "@/hooks/use-favourites-count";
+import { useFavorites } from "@/context/favorite-context";
+import { ThemeToggle } from "./ThemeToggle";
 
 
 const TopNav = () => {
     const cartCount = useCartCount();
-    const favCount = useFavoritesCount();
+    const { favoriteIds } = useFavorites();
+    const favCount = favoriteIds.length;
 
     return (
         <header className="sticky top-0 z-50 hidden w-full border-b border-border bg-background/80 backdrop-blur-md md:flex">
@@ -24,6 +26,7 @@ const TopNav = () => {
                 </nav>
 
                 <div className="flex items-center gap-4">
+
                     <Link href="/favorites">
                         <Button variant="ghost" size="icon" className="relative">
                             <Heart className="h-5 w-5" />
@@ -50,6 +53,7 @@ const TopNav = () => {
                             <span className="sr-only">Cart</span>
                         </Button>
                     </Link>
+                    <ThemeToggle />
 
                     <Link href="/account">
                         <Button variant="ghost" size="icon">

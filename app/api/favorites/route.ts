@@ -1,64 +1,68 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-// GET /api/favorites?userId=1&_expand=product
+// GET: Fetch Favorites
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
-    const expand = searchParams.get("_expand"); // Check if frontend asks for product details
-    const productId = searchParams.get("productId");
+    const expand = searchParams.get("_expand");
 
-    if (!userId) {
-        return NextResponse.json({ error: "UserId is required" }, { status: 400 });
-    }
-
-    const where: any = {
-        userId: Number(userId),
-    };
-
-    if (productId) {
-        where.productId = Number(productId);
-    }
+    if (!userId) return NextResponse.json([]);
 
     try {
         const favorites = await prisma.favorite.findMany({
-            where,
+            where: { userId: Number(userId) },
             include: {
-                product: expand === "product" // Only fetch product details if requested
+                // If frontend asks for product details (Favorites Page), give it.
+                // Otherwise (Context), just give the IDs (implied).
+                product: expand === "product"
             }
         });
+
+        // Optimization: If we just need IDs for the Context
+        if (!expand) {
+            return NextResponse.json(favorites.map(f => f.productId));
+        }
+
         return NextResponse.json(favorites);
     } catch (error) {
-        return NextResponse.json({ error: "Failed to fetch favorites" }, { status: 500 });
+        return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
     }
 }
 
-// POST /api/favorites
+// POST: Toggle Favorite (Add/Remove)
 export async function POST(request: Request) {
     try {
         const body = await request.json();
+        const { userId, productId } = body;
 
-        // Check if already exists to prevent duplicates
-        const existing = await prisma.favorite.findFirst({
+        // 1. Check if it exists
+        const existing = await prisma.favorite.findUnique({
             where: {
-                userId: body.userId,
-                productId: body.productId
+                userId_productId: { // Uses the @@unique constraint
+                    userId: Number(userId),
+                    productId: Number(productId)
+                }
             }
         });
 
         if (existing) {
-            return NextResponse.json(existing); // Return existing if duplicate
+            // 2. Remove if exists
+            await prisma.favorite.delete({
+                where: { id: existing.id }
+            });
+            return NextResponse.json({ action: "removed", productId });
+        } else {
+            // 3. Add if new
+            await prisma.favorite.create({
+                data: {
+                    userId: Number(userId),
+                    productId: Number(productId)
+                }
+            });
+            return NextResponse.json({ action: "added", productId });
         }
-
-        const favorite = await prisma.favorite.create({
-            data: {
-                userId: body.userId,
-                productId: body.productId
-            }
-        });
-
-        return NextResponse.json(favorite);
     } catch (error) {
-        return NextResponse.json({ error: "Failed to add favorite" }, { status: 500 });
+        return NextResponse.json({ error: "Toggle failed" }, { status: 500 });
     }
 }
