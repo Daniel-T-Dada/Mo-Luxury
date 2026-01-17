@@ -1,10 +1,13 @@
-
-
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-    const { id } = await params;
+// 👇 Update the Type Definition here
+export async function DELETE(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> } // 1. Change type to Promise
+) {
+    const { id } = await params; // 2. Await the params
+
     try {
         await prisma.cartItem.delete({ where: { id: Number(id) } });
         return NextResponse.json({ success: true });
@@ -13,9 +16,14 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     }
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-    const { id } = await params;
+// 👇 Do the same for PATCH
+export async function PATCH(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> } // 1. Change type to Promise
+) {
+    const { id } = await params; // 2. Await the params
     const body = await req.json();
+
     try {
         const updated = await prisma.cartItem.update({
             where: { id: Number(id) },
